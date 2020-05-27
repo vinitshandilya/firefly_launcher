@@ -2,8 +2,9 @@ package com.dragonfire.fireflylauncher;
 
 import android.graphics.Color;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
@@ -22,7 +23,7 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
         this.activity = activity;
     }
 
-    public void setDrawerStateListener(DrawerStateListener drawerStateListener) {
+    void setDrawerStateListener(DrawerStateListener drawerStateListener) {
         this.drawerStateListener = drawerStateListener;
     }
 
@@ -42,7 +43,8 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
             }
             else {
                 Fragment drawerfragment = activity.getSupportFragmentManager().getFragments().get(position+1);
-                drawerfragment.getView().setBackgroundColor(Color.argb((int)alpha, 255, 255, 255));
+                if(drawerfragment.getView() != null)
+                    drawerfragment.getView().setBackgroundColor(Color.argb((int)alpha, 255, 255, 255));
             }
 
         }
@@ -64,22 +66,28 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
     public void onPageSelected(int position) {
         super.onPageSelected(position);
         Fragment fragment = activity.getSupportFragmentManager().getFragments().get(position);
-        if(position ==0) { // Homescreen, add horizontal pages
+        if(position ==0) {
             homeview = fragment.getView();
+            if(homeview != null) {
+                //--------------------- Remove app_drawer_layout from homescreen --------------------//
+                FrameLayout vertical_container = homeview.findViewById(R.id.vertical_container);
+                RelativeLayout rl = vertical_container.findViewById(R.id.app_drawer_container);
+                vertical_container.removeView(rl);
 
-            if(drawerStateListener != null) {
-                drawerStateListener.onDrawerCollapsed();
+                if(drawerStateListener != null) {
+                    drawerStateListener.onDrawerCollapsed();
+                }
+
+                //--------------- Add horizontal viewpages for homescreen navigation ----------------//
+                ViewPager2 homepager = homeview.findViewById(R.id.home_pager);
+                ArrayList<String> sidepaneColorArgs = new ArrayList<>();
+                sidepaneColorArgs.add("#00000000");
+                sidepaneColorArgs.add("#00000000");
+                HomePagerAdapter homePagerAdapter = new HomePagerAdapter(activity, sidepaneColorArgs);
+                homepager.setAdapter(homePagerAdapter);
             }
-
-            assert homeview != null;
-            ViewPager2 homepager = homeview.findViewById(R.id.home_pager);
-            ArrayList<String> sidepaneColorArgs = new ArrayList<>();
-            sidepaneColorArgs.add("#00000000");
-            sidepaneColorArgs.add("#00000000");
-            HomePagerAdapter homePagerAdapter = new HomePagerAdapter(activity, sidepaneColorArgs);
-            homepager.setAdapter(homePagerAdapter);
         }
-        if(position ==1) { // drawer expanded
+        if(position == 1) { // drawer expanded
             drawerView = fragment.getView();
             if(drawerStateListener != null) {
                 drawerStateListener.onDrawerExpanded(drawerView);
