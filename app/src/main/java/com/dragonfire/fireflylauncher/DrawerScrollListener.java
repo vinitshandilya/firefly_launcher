@@ -15,10 +15,15 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
     private MainActivity activity;
     private View drawerView;
     private View homeview;
+    private DrawerStateListener drawerStateListener;
 
     DrawerScrollListener(MainActivity activity) {
         super();
         this.activity = activity;
+    }
+
+    public void setDrawerStateListener(DrawerStateListener drawerStateListener) {
+        this.drawerStateListener = drawerStateListener;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -31,14 +36,11 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
         if(positionOffset!=0.0f) {
             if(homeview!=null) {
                 homeview.setBackgroundColor(Color.argb((int)alpha, 255, 255, 255));
-                Log.d("COOK", "homeview set color: " + alpha);
             }
             if(drawerView!=null) {
                 drawerView.setBackgroundColor(Color.argb((int)alpha, 255, 255, 255));
-                Log.d("COOK", "drawerview set color: " + alpha);
             }
             else {
-                Log.d("COOK", "drawer not created yet. Getting from fragment");
                 Fragment drawerfragment = activity.getSupportFragmentManager().getFragments().get(position+1);
                 drawerfragment.getView().setBackgroundColor(Color.argb((int)alpha, 255, 255, 255));
             }
@@ -64,6 +66,11 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
         Fragment fragment = activity.getSupportFragmentManager().getFragments().get(position);
         if(position ==0) { // Homescreen, add horizontal pages
             homeview = fragment.getView();
+
+            if(drawerStateListener != null) {
+                drawerStateListener.onDrawerCollapsed();
+            }
+
             assert homeview != null;
             ViewPager2 homepager = homeview.findViewById(R.id.home_pager);
             ArrayList<String> sidepaneColorArgs = new ArrayList<>();
@@ -72,8 +79,11 @@ public class DrawerScrollListener extends ViewPager2.OnPageChangeCallback {
             HomePagerAdapter homePagerAdapter = new HomePagerAdapter(activity, sidepaneColorArgs);
             homepager.setAdapter(homePagerAdapter);
         }
-        else if(position ==1) { // drawer expanded
+        if(position ==1) { // drawer expanded
             drawerView = fragment.getView();
+            if(drawerStateListener != null) {
+                drawerStateListener.onDrawerExpanded(drawerView);
+            }
         }
     }
 

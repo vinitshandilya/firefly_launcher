@@ -4,10 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DrawerStateListener {
 
     ViewPager2 drawerPager;
     ArrayList<String> drawerColorArgs;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
         drawerPager.setAdapter(drawerPagerAdapter);
         DrawerScrollListener drawerScrollListener = new DrawerScrollListener(MainActivity.this);
+        drawerScrollListener.setDrawerStateListener(this);
         drawerPager.registerOnPageChangeCallback(drawerScrollListener);
 
     }
@@ -34,12 +37,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (drawerPager.getCurrentItem() == 0) {
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
             super.onBackPressed();
         } else {
-            // Otherwise, select the previous step.
             drawerPager.setCurrentItem(drawerPager.getCurrentItem() - 1);
         }
+    }
+
+    @Override
+    public void onDrawerExpanded(View drawerView) {
+        Log.d("COOK", "Drawer expanded");
+
+    }
+
+    @Override
+    public void onDrawerCollapsed() {
+        Log.d("COOK", "Drawer collapsed");
+
     }
 }
